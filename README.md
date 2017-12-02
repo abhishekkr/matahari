@@ -10,10 +10,7 @@ currently tested on
 
 ---
 
+![image of Mata Hari](help/Mata_Hari_Courtesy_Wikimedia.jpg)
 
-
-## little-friend
 ---
-
-
 
