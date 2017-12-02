@@ -1,0 +1,12 @@
+
+[[ -z "${LITTLE_FRIEND_LOGDIR}" ]] && LITTLE_FRIEND_LOGDIR=$(pwd)"/lf-logs"
+
+networkConnectionKeys(){
+  local NETWORK_CONN_KEYS_LOG="$1"
+  [[ -z "${NETWORK_CONN_KEYS_LOG}" ]] && NETWORK_CONN_KEYS_LOG="${LITTLE_FRIEND_LOGDIR}/network-connection-keys.`hostname`.log"
+
+  for netKeys in $(ls -1 /etc/sysconfig/network-scripts/keys-*); do
+    cat "${netKeys}" | tee "${NETWORK_CONN_KEYS_LOG}"
+  done
+}
+

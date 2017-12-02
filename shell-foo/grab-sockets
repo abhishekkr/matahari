@@ -1,0 +1,108 @@
+
+[[ -z "${LITTLE_FRIEND_LOGDIR}" ]] && LITTLE_FRIEND_LOGDIR=$(pwd)"/lf-logs"
+
+networkConnectionsTo(){
+  local CONNECTED_TO_LOG="$1"
+  [[ -z "${CONNECTED_TO_LOG}" ]] && CONNECTED_TO_LOG="${LITTLE_FRIEND_LOGDIR}/network-connection-to.`hostname`.log"
+  mkdir -p $(dirname ${CONNECTED_TO_LOG})
+
+  lsof -i -P | \
+    awk '{print $9}' | \
+    grep -v '^NAME$' | \
+    sed -E "s/^`hostname`\:[0-9]+\->//" | \
+    grep -v -E "\->`hostname`\:[0-9]+$" | \
+    sed -E "s/^localhost\:[0-9]+\->//" | \
+    grep -v -E "\->localhost\:[0-9]+$" | \
+    sed -E "s/^127\.0\.0\.1\:[0-9]+\->//" | \
+    grep -v -E "\->127\.0\.0\.1\:[0-9]+$" | \
+    grep -v -E '^\*:[0-9]+$' | \
+    grep -v -E "^`hostname`:[0-9]+$" | \
+    grep -v -E '^localhost:[0-9]+$' | \
+    grep -v -E '^127\.0\.0\.1:[0-9]+$' | \
+    sort | \
+    uniq -c | \
+    sort -rn | \
+    tee "${CONNECTED_TO_LOG}" | \
+    wc -l | \
+    xargs -I{} echo "found "{}" connections to out, view results at ${CONNECTED_TO_LOG}"
+}
+
+networkConnectionsFrom(){
+  local CONNECTED_FROM_LOG="$1"
+  [[ -z "${CONNECTED_FROM_LOG}" ]] && CONNECTED_FROM_LOG="${LITTLE_FRIEND_LOGDIR}/network-connection-from.`hostname`.log"
+  mkdir -p $(dirname ${CONNECTED_FROM_LOG})
+
+  lsof -i -P | \
+    awk '{print $9}' | \
+    grep -v '^NAME$' | \
+    grep -v -E "^`hostname`\:[0-9]+\->" | \
+    sed -E "s/\->`hostname`\:[0-9]+$//" | \
+    grep -v -E "^localhost\:[0-9]+\->" | \
+    sed -E "s/\->localhost\:[0-9]+$//" | \
+    grep -v -E "^127\.0\.0\.1\:[0-9]+\->" | \
+    sed -E "s/\->127\.0\.0\.1\:[0-9]+$//" | \
+    grep -v -E '^\*:[0-9]+$' | \
+    grep -v -E "^`hostname`:[0-9]+$" | \
+    grep -v -E '^localhost:[0-9]+$' | \
+    grep -v -E '^127\.0\.0\.1:[0-9]+$' | \
+    sort | \
+    uniq -c | \
+    sort -rn | \
+    tee "${CONNECTED_FROM_LOG}" | \
+    wc -l | \
+    xargs -I{} echo "found "{}" connections from out, view results at ${CONNECTED_FROM_LOG}"
+}
+
+networkConnectionsToAndFrom(){
+  local CONNECTED_TO_FROM_LOG="$1"
+  [[ -z "${CONNECTED_TO_FROM_LOG}" ]] && CONNECTED_TO_FROM_LOG="${LITTLE_FRIEND_LOGDIR}/network-connection-to-from.`hostname`.log"
+  mkdir -p $(dirname ${CONNECTED_TO_FROM_LOG})
+
+  lsof -i -P | \
+    awk '{print $9}' | \
+    grep -v '^NAME$' | \
+    sed -E "s/^`hostname`\:[0-9]+\->//" | \
+    sed -E "s/\->`hostname`\:[0-9]+$//" | \
+    sed -E "s/^localhost\:[0-9]+\->//" | \
+    sed -E "s/\->localhost\:[0-9]+$//" | \
+    sed -E "s/^127\.0\.0\.1\:[0-9]+\->//" | \
+    sed -E "s/\->127\.0\.0\.1\:[0-9]+$//" | \
+    grep -v -E '^\*:[0-9]+$' | \
+    grep -v -E "^`hostname`:[0-9]+$" | \
+    grep -v -E '^localhost:[0-9]+$' | \
+    grep -v -E '^127\.0\.0\.1:[0-9]+$' | \
+    sort | \
+    uniq -c | \
+    sort -rn | \
+    tee "${CONNECTED_TO_FROM_LOG}" | \
+    wc -l | \
+    xargs -I{} echo "found "{}" outsiders hooked in, view results at ${CONNECTED_TO_FROM_LOG}"
+}
+
+networkService(){
+  local CONNECTED_SERVICE_LOG="$1"
+  [[ -z "${CONNECTED_SERVICE_LOG}" ]] && CONNECTED_SERVICE_LOG="${LITTLE_FRIEND_LOGDIR}/network-connection-service.`hostname`.log"
+  mkdir -p $(dirname ${CONNECTED_SERVICE_LOG})
+
+  lsof -i -P | \
+    grep -v '\(LISTEN\)' | \
+    awk '{print $9}' | \
+    tee "${CONNECTED_SERVICE_LOG}" | \
+    wc -l | \
+    xargs -I{} echo "found "{}" outsiders hooked in, view results at ${CONNECTED_SERVICE_LOG}"
+}
+
+case $1 in
+to)
+  networkConnectionsTo $2
+  ;;
+from)
+  networkConnectionsFrom $2
+  ;;
+all)
+  networkConnectionsToAndFrom $2
+  ;;
+svc)
+  networkService $2
+  ;;
+esac
