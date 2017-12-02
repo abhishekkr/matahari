@@ -10,7 +10,7 @@ currently tested on
 
 ---
 
-![image of Mata Hari](help/Mata_Hari_Courtesy_Wikimedia.jpg)
+![image of Mata Hari](docs/Mata_Hari_Courtesy_Wikimedia.jpg)
 
 ---
 
